@@ -1,0 +1,44 @@
+Server (ACKs simple sequence numbers): SlidingWindowServer.java
+// SlidingWindowServer.java (very small demo)
+import java.net.*;
+import java.io.*;
+
+public class SlidingWindowServer {
+    public static void main(String[] args) throws Exception {
+        ServerSocket ss = new ServerSocket(12345);
+        System.out.println("Server waiting...");
+        Socket s = ss.accept();
+        BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+        PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+        String pkt;
+        while ((pkt = in.readLine()) != null) {
+            System.out.println("Got packet: " + pkt);
+            // send ACK for received packet number
+            out.println("ACK " + pkt);
+        }
+        s.close(); ss.close();
+    }
+}
+
+Client: SlidingWindowClient.java
+// SlidingWindowClient.java (simple sender with window)
+import java.net.*;
+import java.io.*;
+
+public class SlidingWindowClient {
+    public static void main(String[] args) throws Exception {
+        Socket s = new Socket("localhost", 12345);
+        BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+        PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+        BufferedReader kb = new BufferedReader(new InputStreamReader(System.in));
+        System.out.println("Type packets (one per line). Type 'exit' to quit.");
+        String line;
+        while ((line = kb.readLine()) != null) {
+            if (line.equalsIgnoreCase("exit")) break;
+            out.println(line);                 // send packet
+            String ack = in.readLine();       // wait simple ACK
+            System.out.println("Server: " + ack);
+        }
+        s.close();
+    }
+}
