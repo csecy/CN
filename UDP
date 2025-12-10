@@ -1,0 +1,41 @@
+SERVER
+
+import java.net.*; import java.io.*;
+public class UDPServer {
+    public static void main(String[] args) throws Exception {
+        DatagramSocket ds = new DatagramSocket(2400);
+        byte[] buffer = new byte[1024];
+        System.out.println("UDP server running...");
+        while (true) {
+            DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+            ds.receive(request);
+            // read nothing from packet - simply ask console input and reply
+            BufferedReader kb = new BufferedReader(new InputStreamReader(System.in));
+            System.out.print("Reply> ");
+            String reply = kb.readLine();
+            byte[] rb = reply.getBytes();
+            DatagramPacket response = new DatagramPacket(rb, rb.length, request.getAddress(), request.getPort());
+            ds.send(response);
+        }
+    }
+}
+
+
+CLIENT 
+
+import java.net.*;
+public class UDPClient {
+    public static void main(String[] args) throws Exception {
+        DatagramSocket ds = new DatagramSocket();
+        String msg = "Hello server";
+        byte[] b = msg.getBytes();
+        InetAddress host = InetAddress.getByName("127.0.0.1");
+        DatagramPacket req = new DatagramPacket(b, b.length, host, 2400);
+        ds.send(req);
+        byte[] buf = new byte[1024];
+        DatagramPacket resp = new DatagramPacket(buf, buf.length);
+        ds.receive(resp);
+        System.out.println("Received: " + new String(resp.getData(), 0, resp.getLength()));
+        ds.close();
+    }
+}
