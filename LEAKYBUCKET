@@ -1,0 +1,34 @@
+import java.util.Random;
+public class LeakyBucket {
+    static int bucket = 0;
+    static final int BMAX = 1024;
+    static final int OUT_RATE = 100; // bytes per tick
+
+    public static void main(String[] args) throws Exception {
+        Thread producer = new Thread(() -> {
+            Random r = new Random();
+            while (true) {
+                int pkt = r.nextInt(300);
+                if (bucket + pkt <= BMAX) {
+                    bucket += pkt;
+                    System.out.println("Produced " + pkt + ", bucket=" + bucket);
+                } else {
+                    System.out.println("Dropped pkt " + pkt + " (overflow)");
+                }
+                try { Thread.sleep(500); } catch (Exception e) {}
+            }
+        });
+        Thread consumer = new Thread(() -> {
+            while (true) {
+                if (bucket > 0) {
+                    int out = Math.min(bucket, OUT_RATE);
+                    bucket -= out;
+                    System.out.println("Leaked " + out + ", bucket=" + bucket);
+                }
+                try { Thread.sleep(1500); } catch (Exception e) {}
+            }
+        });
+        producer.start(); consumer.start();
+        producer.join(); consumer.join();
+    }
+}
