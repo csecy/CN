@@ -1,0 +1,38 @@
+SERVER
+import java.net.*; import java.io.*;
+public class SimpleFileServer {
+    public static void main(String[] args) throws Exception {
+        ServerSocket ss = new ServerSocket(4000);
+        System.out.println("Server ready");
+        Socket s = ss.accept();
+        BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+        PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+        String fname = in.readLine();
+        try (BufferedReader fr = new BufferedReader(new FileReader(fname))) {
+            String line;
+            while ((line = fr.readLine()) != null) out.println(line);
+        } catch (FileNotFoundException e) {
+            out.println("ERROR: file not found");
+        }
+        s.close(); ss.close();
+    }
+}
+
+
+CLIENT
+
+import java.net.*; import java.io.*;
+public class SimpleFileClient {
+    public static void main(String[] args) throws Exception {
+        Socket s = new Socket("127.0.0.1", 4000);
+        BufferedReader kb = new BufferedReader(new InputStreamReader(System.in));
+        PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+        System.out.print("Enter filename: ");
+        String fname = kb.readLine();
+        out.println(fname);
+        String line;
+        while ((line = in.readLine()) != null) System.out.println(line);
+        s.close();
+    }
+}
